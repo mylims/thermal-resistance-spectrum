@@ -1,6 +1,6 @@
 {
   "name": "thermal-resistance-sepctrum",
-  "version": "0.6.1",
+  "version": "0.0.0",
   "description": "Read different formats and unify the format",
   "main": "./lib/index.js",
   "module": "./lib-esm/index.js",

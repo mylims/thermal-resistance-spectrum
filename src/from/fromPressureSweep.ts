@@ -1,4 +1,5 @@
 import { Analysis } from 'common-spectrum';
+import SimpleLinearRegression from 'ml-regression-simple-linear';
 import { ndParse } from 'ndim-parser';
 
 import { appendUnits, keyMap, SeriesType } from '../utils';
@@ -36,6 +37,7 @@ function getDiff(
     [name]: { data: diffData, label, units: data[key1].units },
   };
 }
+
 function getMul(
   data: Data,
   key1: string,
@@ -53,18 +55,66 @@ function getMul(
   };
 }
 
+function getInv(
+  data: Data,
+  key: string,
+  name: string,
+  label: string,
+  units: string,
+) {
+  const originalData = data[key].data || [];
+  const invData = originalData.map((val) => 1 / val);
+  return {
+    ...data,
+    [name]: { data: invData, label, units },
+  };
+}
+
+function getSlope(
+  meta: Record<string, unknown>,
+  data: Data,
+  key1: string,
+  key2: string,
+  name: string,
+  label: string,
+  units: string,
+) {
+  const data1 = data[key1].data || [];
+  const data2 = data[key2].data || [];
+  const regression = new SimpleLinearRegression(data1, data2);
+  const slope = regression.slope;
+  return {
+    ...meta,
+    [name]: { value: slope, label, units },
+  };
+}
+
 export function fromPressureSweep(text: string) {
   const { data, meta } = ndParse(text, { keyMap });
-  const parsedMeta = parseMeta(meta);
+
+  // calculates data operations
   const parsedData = appendUnits(data);
   const dataTemp = getDiff(parsedData, 'm', 'e', 'y', 'Temperature difference');
   const dataPressure = getDiff(dataTemp, 'i', 'o', 'p', 'Pressure difference');
   const dataPower = getMul(dataPressure, 'v', 'a', 'x', 'Power', 'W');
+  const dataInvFlow = getInv(dataPower, 'r', 'n', 'Inverse flow', 's/ml');
+
+  // calculates metadata
+  const parsedMeta = parseMeta(meta);
+  const metaResitance = getSlope(
+    parsedMeta,
+    dataInvFlow,
+    'x',
+    'y',
+    'totalThermalResistance',
+    'Total thermal resistance',
+    'K/W',
+  );
 
   let analysis = new Analysis();
-  analysis.pushSpectrum(dataPower, {
+  analysis.pushSpectrum(dataInvFlow, {
     title: parsedMeta['Protocol name'],
-    meta: parsedMeta,
+    meta: metaResitance,
   });
 
   return analysis;

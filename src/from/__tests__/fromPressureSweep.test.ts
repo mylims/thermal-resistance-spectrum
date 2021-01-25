@@ -18,4 +18,5 @@ test('fromPressureSweep', () => {
   expect(spectrum.variables.y.label).toStrictEqual('Temperature difference');
 
   expect(spectrum.title).toBe('Rt_300mbar');
+  expect(spectrum.meta.totalThermalResistance.value).toBeCloseTo(0.90567, 4);
 });

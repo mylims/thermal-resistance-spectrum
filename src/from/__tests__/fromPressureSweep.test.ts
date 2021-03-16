@@ -9,14 +9,20 @@ test('fromPressureSweep', () => {
     'latin1',
   );
   let analysis = fromPressureSweep(csv);
-  let spectrum = analysis.getXYSpectrum({ index: 0 });
+  let spectrum = analysis.getXYSpectrum({
+    xLabel: 'Power',
+    yLabel: 'Temperature difference',
+  });
 
-  expect(spectrum.variables.x.data).toHaveLength(18);
-  expect(spectrum.variables.x.label).toStrictEqual('Power');
+  expect(spectrum?.variables.x.data).toHaveLength(18);
+  expect(spectrum?.variables.x.label).toStrictEqual('Power');
 
-  expect(spectrum.variables.y.data).toHaveLength(18);
-  expect(spectrum.variables.y.label).toStrictEqual('Temperature difference');
+  expect(spectrum?.variables.y.data).toHaveLength(18);
+  expect(spectrum?.variables.y.label).toStrictEqual('Temperature difference');
 
-  expect(spectrum.title).toBe('Rt_300mbar');
-  expect(spectrum.meta.totalThermalResistance.value).toBeCloseTo(0.90567, 4);
+  expect(spectrum?.title).toBe('Rt_300mbar');
+  expect(Number(spectrum?.meta?.['totalThermalResistance.value'])).toBeCloseTo(
+    0.90567,
+    4,
+  );
 });

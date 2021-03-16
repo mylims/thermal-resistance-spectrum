@@ -4,10 +4,10 @@ import { ndParse } from 'ndim-parser';
 
 import { appendUnits, keyMap, SeriesType } from '../utils';
 
-function parseMeta(meta: Record<string, string>): Record<string, unknown> {
+function parseMeta(meta: Record<string, string>): Record<string, string> {
   if (!meta) return {};
 
-  let ans: Record<string, unknown> = {};
+  let ans: Record<string, string> = {};
   for (const key in meta) {
     const line = [key, ...meta[key].split(',')];
     for (let index = 0; index < line.length; index += 2) {
@@ -71,7 +71,7 @@ function getInv(
 }
 
 function getSlope(
-  meta: Record<string, unknown>,
+  meta: Record<string, string>,
   data: Data,
   key1: string,
   key2: string,
@@ -85,7 +85,9 @@ function getSlope(
   const slope = regression.slope;
   return {
     ...meta,
-    [name]: { value: slope, label, units },
+    [`${name}.value`]: JSON.stringify(slope),
+    [`${name}.label`]: label,
+    [`${name}.units`]: units,
   };
 }
 
